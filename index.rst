@@ -8,3 +8,9 @@ Welcome to the documentation for the Modular Distributed Control System!
   :caption: Subjects:
 
   roadmap
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Components:
+
+  pkg/mdcs_node/index

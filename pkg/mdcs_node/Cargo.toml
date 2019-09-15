@@ -1,0 +1,7 @@
+[package]
+name = "mdcs_node"
+version = "0.1.0"
+authors = ["Alexandru Barbur <alex@ctrlc.name>"]
+edition = "2018"
+
+[dependencies]
