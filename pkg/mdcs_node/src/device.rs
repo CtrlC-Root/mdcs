@@ -6,7 +6,7 @@ pub struct Attribute {
 }
 
 #[derive(Debug)]
-pub struct Function {
+pub struct Action {
     pub input_schema: String,
     pub output_schema: String
 }
@@ -14,7 +14,7 @@ pub struct Function {
 #[derive(Debug)]
 pub enum Member {
     Attribute(Attribute),
-    Function(Function)
+    Action(Action)
 }
 
 #[derive(Debug)]
