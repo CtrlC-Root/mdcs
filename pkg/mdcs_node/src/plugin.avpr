@@ -5,11 +5,19 @@
 
   "types": [
     {
-      "name": "AttributeIdentifier",
+      "name": "Attribute",
       "type": "record",
       "fields": [
-        {"name": "device", "type": "string"},
-        {"name": "attribute", "type": "string"}
+        {"name": "path", "type": "string"},
+        {
+          "name": "flags",
+          "type": {
+            "name": "AttributeFlags",
+            "type": "array",
+            "items": "string"
+          }
+        },
+        {"name": "schema", "type": "string"}
       ]
     },
     {
@@ -21,11 +29,12 @@
       ]
     },
     {
-      "name": "ActionIdentifier",
+      "name": "Action",
       "type": "record",
       "fields": [
-        {"name": "device", "type": "string"},
-        {"name": "action", "type": "string"}
+        {"name": "path", "type": "string"},
+        {"name": "input_schema", "type": "string"},
+        {"name": "output_schema", "type": "string"}
       ]
     },
     {
@@ -40,16 +49,17 @@
       "type": "record",
       "fields": [
         {"name": "value", "type": "bytes"},
-        {"name": "time", "type": "long", "logicalType": "timestamp-millis"}
+        {"name": "start", "type": "long", "logicalType": "timestamp-millis"},
+        {"name": "end", "type": "long", "logicalType": "timestamp-millis"}
       ]
     },
     {
-      "name": "DeviceTree",
+      "name": "Device",
       "type": "record",
       "fields": [
         {"name": "name", "type": "string"},
-        {"name": "attributes", "type": "array", "items": "AttributeIdentifier"},
-        {"name": "actions": "type": "array", "items": "ActionIdentifier"}
+        {"name": "attributes", "type": "array", "items": "Attribute"},
+        {"name": "actions", "type": "array", "items": "Action"}
       ]
     },
     {
@@ -64,7 +74,6 @@
       "type": "error",
       "fields": [
         {"name": "message", "type": "string"},
-        {"name": "device", "type": "string"},
         {"name": "attribute", "type": "string"}
       ]
     },
@@ -73,7 +82,6 @@
       "type": "error",
       "fields": [
         {"name": "message", "type": "string"},
-        {"name": "device", "type": "string"},
         {"name": "action", "type": "string"}
       ]
     }
@@ -81,7 +89,7 @@
 
   "messages": {
     "describe": {
-      "doc": "describe device",
+      "doc": "describe the device",
       "request": [],
       "response": "DeviceTree",
       "errors": ["ServerError"]
@@ -89,7 +97,7 @@
     "read": {
       "doc": "read attribute value",
       "request": [
-          {"name": "target", "type": "AttributeIdentifier"}
+          {"name": "path", "type": "string"}
       ],
       "response": "AttributeValue",
       "errors": ["ServerError", "AttributeError"]
@@ -97,7 +105,7 @@
     "write": {
       "doc": "write attribute value",
       "request": [
-        {"name": "target", "type": "AttributeIdentifier"},
+        {"name": "path", "type": "string"},
         {"name": "data", "type": "AttributeValue"}
       ],
       "response": "AttributeValue",
@@ -106,7 +114,7 @@
     "run": {
       "doc": "run an action",
       "request": [
-        {"name": "target", "type": "ActionIdentifier"},
+        {"name": "path", "type": "string"},
         {"name": "data", "type": "ActionInput"}
       ],
       "response": "ActionOutput",
