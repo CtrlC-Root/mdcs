@@ -5,3 +5,4 @@ authors = ["Alexandru Barbur <alex@ctrlc.name>"]
 edition = "2018"
 
 [dependencies]
+mdcs = { path = "../mdcs" }
