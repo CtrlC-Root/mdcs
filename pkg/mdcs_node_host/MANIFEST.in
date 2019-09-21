@@ -1,0 +1,3 @@
+# Apache Avro Schemas
+recursive-include mdcs_node_host *.avsc
+recursive-include mdcs_node_host *.avpr

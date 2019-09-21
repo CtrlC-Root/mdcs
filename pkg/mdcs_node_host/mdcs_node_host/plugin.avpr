@@ -1,0 +1,126 @@
+{
+  "namespace": "name.ctrlc.mdcs",
+  "protocol": "NodePlugin",
+  "doc": "Internal Node Plugin Interface",
+
+  "types": [
+    {
+      "name": "Attribute",
+      "type": "record",
+      "fields": [
+        {"name": "path", "type": "string"},
+        {
+          "name": "flags",
+          "type": {"type": "array", "items": "string"}
+        },
+        {"name": "schema", "type": "string"}
+      ]
+    },
+    {
+      "name": "AttributeValue",
+      "type": "record",
+      "fields": [
+        {"name": "value", "type": "bytes"},
+        {"name": "time", "type": "long", "logicalType": "timestamp-millis"}
+      ]
+    },
+    {
+      "name": "Action",
+      "type": "record",
+      "fields": [
+        {"name": "path", "type": "string"},
+        {"name": "input_schema", "type": "string"},
+        {"name": "output_schema", "type": "string"}
+      ]
+    },
+    {
+      "name": "ActionInput",
+      "type": "record",
+      "fields": [
+        {"name": "value", "type": "bytes"}
+      ]
+    },
+    {
+      "name": "ActionOutput",
+      "type": "record",
+      "fields": [
+        {"name": "value", "type": "bytes"},
+        {"name": "start", "type": "long", "logicalType": "timestamp-millis"},
+        {"name": "end", "type": "long", "logicalType": "timestamp-millis"}
+      ]
+    },
+    {
+      "name": "Device",
+      "type": "record",
+      "fields": [
+        {"name": "name", "type": "string"},
+        {
+          "name": "attributes",
+          "type": {"type": "array", "items": "Attribute"}
+        },
+        {
+          "name": "actions",
+          "type": {"type": "array", "items": "Action"}
+        }
+      ]
+    },
+    {
+      "name": "ServerError",
+      "type": "error",
+      "fields": [
+        {"name": "message", "type": "string"}
+      ]
+    },
+    {
+      "name": "AttributeError",
+      "type": "error",
+      "fields": [
+        {"name": "message", "type": "string"},
+        {"name": "attribute", "type": "string"}
+      ]
+    },
+    {
+      "name": "ActionError",
+      "type": "error",
+      "fields": [
+        {"name": "message", "type": "string"},
+        {"name": "action", "type": "string"}
+      ]
+    }
+  ],
+
+  "messages": {
+    "describe": {
+      "doc": "describe the device",
+      "request": [],
+      "response": "Device",
+      "errors": ["ServerError"]
+    },
+    "read": {
+      "doc": "read attribute value",
+      "request": [
+          {"name": "path", "type": "string"}
+      ],
+      "response": "AttributeValue",
+      "errors": ["ServerError", "AttributeError"]
+    },
+    "write": {
+      "doc": "write attribute value",
+      "request": [
+        {"name": "path", "type": "string"},
+        {"name": "data", "type": "AttributeValue"}
+      ],
+      "response": "AttributeValue",
+      "errors": ["ServerError", "AttributeError"]
+    },
+    "run": {
+      "doc": "run an action",
+      "request": [
+        {"name": "path", "type": "string"},
+        {"name": "data", "type": "ActionInput"}
+      ],
+      "response": "ActionOutput",
+      "errors": ["ServerError", "ActionError"]
+    }
+  }
+}
