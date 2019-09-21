@@ -1,0 +1,101 @@
+{
+  "namespace": "name.ctrlc.mdcs",
+  "protocol": "Node",
+  "doc": "Public Node Interface",
+
+  "types": [
+    {
+      "name": "AttributeIdentifier",
+      "type": "record",
+      "fields": [
+        {"name": "device", "type": "string"},
+        {"name": "attribute", "type": "string"}
+      ]
+    },
+    {
+      "name": "AttributeValue",
+      "type": "record",
+      "fields": [
+        {"name": "value", "type": "bytes"},
+        {"name": "time", "type": "long", "logicalType": "timestamp-millis"}
+      ]
+    },
+    {
+      "name": "ActionIdentifier",
+      "type": "record",
+      "fields": [
+        {"name": "device", "type": "string"},
+        {"name": "action", "type": "string"}
+      ]
+    },
+    {
+      "name": "ActionInput",
+      "type": "record",
+      "fields": [
+        {"name": "value", "type": "bytes"}
+      ]
+    },
+    {
+      "name": "ActionOutput",
+      "type": "record",
+      "fields": [
+        {"name": "value", "type": "bytes"},
+        {"name": "time", "type": "long", "logicalType": "timestamp-millis"}
+      ]
+    },
+    {
+      "name": "ServerError",
+      "type": "error",
+      "fields": [
+        {"name": "message", "type": "string"}
+      ]
+    },
+    {
+      "name": "AttributeError",
+      "type": "error",
+      "fields": [
+        {"name": "message", "type": "string"},
+        {"name": "device", "type": "string"},
+        {"name": "attribute", "type": "string"}
+      ]
+    },
+    {
+      "name": "ActionError",
+      "type": "error",
+      "fields": [
+        {"name": "message", "type": "string"},
+        {"name": "device", "type": "string"},
+        {"name": "action", "type": "string"}
+      ]
+    }
+  ],
+
+  "messages": {
+    "read": {
+      "doc": "read attribute value",
+      "request": [
+          {"name": "target", "type": "AttributeIdentifier"}
+      ],
+      "response": "AttributeValue",
+      "errors": ["ServerError", "AttributeError"]
+    },
+    "write": {
+      "doc": "write attribute value",
+      "request": [
+        {"name": "target", "type": "AttributeIdentifier"},
+        {"name": "data", "type": "AttributeValue"}
+      ],
+      "response": "AttributeValue",
+      "errors": ["ServerError", "AttributeError"]
+    },
+    "run": {
+      "doc": "run an action",
+      "request": [
+        {"name": "target", "type": "ActionIdentifier"},
+        {"name": "data", "type": "ActionInput"}
+      ],
+      "response": "ActionOutput",
+      "errors": ["ServerError", "ActionError"]
+    }
+  }
+}
