@@ -10,6 +10,14 @@ impl device::Attribute for Attribute {
     fn schema(&self) -> &str {
         &self.schema
     }
+
+    fn readable(&self) -> bool {
+        return true;
+    }
+
+    fn writable(&self) -> bool {
+        return false;
+    }
 }
 
 #[derive(Debug)]
