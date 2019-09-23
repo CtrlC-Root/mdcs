@@ -6,3 +6,5 @@ edition = "2018"
 
 [dependencies]
 mdcs = { path = "../mdcs" }
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.8"
