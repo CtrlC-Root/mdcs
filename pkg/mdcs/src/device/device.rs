@@ -27,15 +27,12 @@ impl fmt::Debug for Member<'_> {
 }
 
 pub trait Device {
-    fn name(&self) -> &str;
-    fn members(&self) -> HashMap<&str, Member>;
+    // TODO
 }
 
 impl fmt::Debug for &dyn Device {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct("Device")
-            .field("name", &self.name())
-            .field("members", &self.members())
             .finish()
     }
 }

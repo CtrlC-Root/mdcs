@@ -49,19 +49,5 @@ pub struct Device {
 }
 
 impl device::Device for Device {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn members(&self) -> HashMap<&str, device::Member> {
-        self.members
-            .iter()
-            .map(|(ref path, ref member)| {
-                match member {
-                    Member::Attribute(attribute) => (&path[..], device::Member::Attribute(attribute)),
-                    Member::Action(action) => (&path[..], device::Member::Action(action))
-                }
-            })
-            .collect()
-    }
+    // TODO
 }
