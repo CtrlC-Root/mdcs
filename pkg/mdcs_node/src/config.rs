@@ -1,8 +1,15 @@
 use std::fs;
+use std::net::IpAddr;
 use std::error::Error;
 use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NetworkConfig {
+    host: IpAddr,
+    port: u16
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PluginConfig {
@@ -17,6 +24,7 @@ pub struct DeviceConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NodeConfig {
+    pub network: NetworkConfig,
     pub plugins: HashMap<String, PluginConfig>,
     pub devices: Vec<DeviceConfig>
 }
