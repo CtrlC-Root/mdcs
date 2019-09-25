@@ -1,5 +1,6 @@
 [workspace]
 members = [
   "mdcs",
-  "mdcs_node"
+  "mdcs_node",
+  "mdcs_node_host"
 ]

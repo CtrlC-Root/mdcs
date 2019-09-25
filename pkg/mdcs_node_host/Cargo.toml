@@ -1,0 +1,10 @@
+[package]
+name = "mdcs_node_host"
+version = "0.1.0"
+authors = ["Alexandru Barbur <alex@ctrlc.name>"]
+edition = "2018"
+
+[dependencies]
+mdcs = { path = "../mdcs" }
+mdcs_node = { path = "../mdcs_node" }
+sensors = "0.2.1"
