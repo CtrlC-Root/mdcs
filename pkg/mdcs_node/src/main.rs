@@ -1,8 +1,4 @@
-use std::thread;
-use std::time::Duration;
-
-use mdcs_node::node::{PluginConfig, Config};
-use mdcs_node::plugin::Plugin;
+use mdcs_node::node::Config;
 
 fn main() {
     let config = match Config::from_file("config.yaml") {
@@ -13,20 +9,4 @@ fn main() {
     };
 
     println!("{:#?}", config);
-
-    let plugin = Plugin {
-        name: String::from("host"),
-        config: PluginConfig {
-            description: config.plugins["host"].description.clone(),
-            command: config.plugins["host"].command.clone()
-        }
-    };
-
-    let mut instance = plugin.spawn().expect("Failed to spawn plugin instance");
-    while instance.is_running() {
-        println!(".");
-        thread::sleep(Duration::from_millis(1000));
-    }
-
-    println!("{}", instance.stop().unwrap());
 }
