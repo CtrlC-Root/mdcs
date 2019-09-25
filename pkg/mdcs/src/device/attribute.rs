@@ -28,7 +28,7 @@ pub trait Attribute {
     }
 }
 
-impl fmt::Debug for &dyn Attribute {
+impl fmt::Debug for Box<dyn Attribute> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct("Attribute")
             .field("schema", &self.schema())

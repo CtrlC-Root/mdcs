@@ -6,7 +6,7 @@ pub trait Action {
     // fn run(&self);
 }
 
-impl fmt::Debug for &dyn Action {
+impl fmt::Debug for Box<dyn Action> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.debug_struct("Action")
             .field("input_schema", &self.input_schema())

@@ -1,38 +1,74 @@
 use std::fmt;
+use std::result::Result;
 use std::collections::HashMap;
 
 use super::attribute::Attribute;
 use super::action::Action;
 
-pub enum Member<'a> {
-    Attribute(&'a dyn Attribute),
-    Action(&'a dyn Action)
+pub enum Member {
+    Attribute(Box<dyn Attribute>),
+    Action(Box<dyn Action>)
 }
 
-impl fmt::Debug for Member<'_> {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl fmt::Debug for Member {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Member::Attribute(attribute) => {
                 fmt.debug_tuple("Attribute")
-                    .field(&attribute)
+                    .field(attribute)
                     .finish()
             }
             Member::Action(action) => {
                 fmt.debug_tuple("Action")
-                    .field(&action)
+                    .field(action)
                     .finish()
             }
         }
     }
 }
 
-pub trait Device {
-    // TODO
+#[derive(Debug)]
+pub struct Device {
+    members: HashMap<String, Member>
 }
 
-impl fmt::Debug for &dyn Device {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.debug_struct("Device")
-            .finish()
+pub enum DeviceError {
+    PathExists(String),
+    PathNotFound(String),
+}
+
+impl Device {
+    pub fn new() -> Device {
+        Device {
+            members: HashMap::new()
+        }
+    }
+
+    pub fn get(&self, path: &str) -> Option<&Member> {
+        self.members.get(path)
+    }
+
+    pub fn insert(&mut self, path: &str, member: Member) -> Result<(), DeviceError> {
+        let path = String::from(path);
+        if self.members.contains_key(&path) {
+            Err(DeviceError::PathExists(path))
+        } else {
+            self.members.insert(path, member);
+            Ok(())
+        }
+    }
+
+    pub fn remove(&mut self, path: &str) -> Result<(), DeviceError> {
+        let path = String::from(path);
+        if self.members.contains_key(&path) {
+            self.members.remove(&path);
+            Ok(())
+        } else {
+            Err(DeviceError::PathNotFound(path))
+        }
+    }
+
+    pub fn iter(&self) -> std::collections::hash_map::Iter<String, Member> {
+        self.members.iter()
     }
 }
