@@ -83,8 +83,6 @@ fn main() {
         }
     }
 
-    println!("{:#?}", device);
-
     let mut server = PluginServer::new(device);
     server.run().unwrap();
 }
