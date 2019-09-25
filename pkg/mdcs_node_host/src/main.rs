@@ -1,5 +1,4 @@
 use std::result::Result;
-use std::error::Error;
 
 use mdcs::device::{
     Device,
@@ -14,8 +13,6 @@ use avro_rs::schema::Schema;
 use avro_rs::types::Value;
 use sensors::{
     Sensors,
-    Chip,
-    Feature,
     FeatureType,
     SubfeatureType
 };
@@ -32,10 +29,6 @@ impl Attribute for TempAttribute {
 
     fn readable(&self) -> bool {
         true
-    }
-
-    fn writable(&self) -> bool {
-        false
     }
 
     fn read(&self) -> Result<Value, DeviceError> {
@@ -58,10 +51,6 @@ impl Attribute for TempAttribute {
             Ok(value) => Ok(Value::Double(value)),
             Err(error) => Err(DeviceError::from(Box::new(error)))
         }
-    }
-
-    fn write(&self, _value: Value) -> Result<(), DeviceError> {
-        Err(DeviceError::new(ErrorKind::Generic))
     }
 }
 
@@ -89,13 +78,13 @@ fn main() {
 
             if let Some(attribute) = attribute.take() {
                 let path = format!("{}.{}", &chip_name, &feature_name);
-                device.insert(&path, Member::Attribute(attribute));
+                device.insert(&path, Member::Attribute(attribute)).unwrap();
             }
         }
     }
 
     println!("{:#?}", device);
 
-    // let mut server = PluginServer::new(device);
-    // server.run();
+    let mut server = PluginServer::new(device);
+    server.run().unwrap();
 }

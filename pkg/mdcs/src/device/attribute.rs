@@ -4,7 +4,7 @@ use std::collections::HashSet;
 use avro_rs::schema::Schema;
 use avro_rs::types::Value;
 
-use super::error::DeviceError;
+use super::error::{DeviceError, ErrorKind};
 
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub enum AttributeFlags {
@@ -15,8 +15,13 @@ pub enum AttributeFlags {
 pub trait Attribute {
     fn schema(&self) -> Schema;
 
-    fn readable(&self) -> bool;
-    fn writable(&self) -> bool;
+    fn readable(&self) -> bool {
+        false
+    }
+
+    fn writable(&self) -> bool {
+        false
+    }
 
     fn flags(&self) -> HashSet<AttributeFlags> {
         let mut flags = HashSet::new();
@@ -32,8 +37,13 @@ pub trait Attribute {
         return flags;
     }
 
-    fn read(&self) -> Result<Value, DeviceError>;
-    fn write(&self, value: Value) -> Result<(), DeviceError>;
+    fn read(&self) -> Result<Value, DeviceError> {
+        Err(DeviceError::new(ErrorKind::Generic))
+    }
+
+    fn write(&self, _value: Value) -> Result<(), DeviceError> {
+        Err(DeviceError::new(ErrorKind::Generic))
+    }
 }
 
 impl fmt::Debug for Box<dyn Attribute> {

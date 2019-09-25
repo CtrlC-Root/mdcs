@@ -3,12 +3,15 @@ use std::fmt;
 use avro_rs::schema::Schema;
 use avro_rs::types::Value;
 
-use super::error::DeviceError;
+use super::error::{DeviceError, ErrorKind};
 
 pub trait Action {
     fn input_schema(&self) -> Schema;
     fn output_schema(&self) -> Schema;
-    fn run(&self, input: Value) -> Result<Value, DeviceError>;
+
+    fn run(&self, _input: Value) -> Result<Value, DeviceError> {
+        Err(DeviceError::new(ErrorKind::Generic))
+    }
 }
 
 impl fmt::Debug for Box<dyn Action> {
