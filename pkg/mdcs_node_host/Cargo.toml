@@ -7,4 +7,5 @@ edition = "2018"
 [dependencies]
 mdcs = { path = "../mdcs" }
 mdcs_node = { path = "../mdcs_node" }
+avro-rs = "0.6"
 sensors = "0.2.1"
