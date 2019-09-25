@@ -23,16 +23,16 @@ pub struct DeviceConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct NodeConfig {
+pub struct Config {
     pub network: NetworkConfig,
     pub plugins: HashMap<String, PluginConfig>,
     pub devices: Vec<DeviceConfig>
 }
 
-impl NodeConfig {
-    pub fn from_file(path: &str) -> Result<NodeConfig, Box<dyn Error>> {
+impl Config {
+    pub fn from_file(path: &str) -> Result<Config, Box<dyn Error>> {
         let content = fs::read_to_string(path)?;
-        let config: NodeConfig = serde_yaml::from_str(&content)?;
+        let config: Config = serde_yaml::from_str(&content)?;
 
         Ok(config)
     }

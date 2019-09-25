@@ -1,11 +1,11 @@
 use std::thread;
 use std::time::Duration;
 
-use mdcs_node::config::{PluginConfig, NodeConfig};
+use mdcs_node::node::{PluginConfig, Config};
 use mdcs_node::plugin::Plugin;
 
 fn main() {
-    let config = match NodeConfig::from_file("config.yaml") {
+    let config = match Config::from_file("config.yaml") {
         Ok(config) => config,
         Err(error) => {
             panic!("failed to parse config file: {}", error);

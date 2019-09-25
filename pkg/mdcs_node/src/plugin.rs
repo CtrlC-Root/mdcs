@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::process::{Command, Child, ExitStatus};
 
-use crate::config::PluginConfig;
+use crate::node::PluginConfig;
 
 #[derive(Debug)]
 pub struct Plugin {
