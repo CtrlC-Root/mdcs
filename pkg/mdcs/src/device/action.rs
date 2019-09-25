@@ -1,9 +1,14 @@
 use std::fmt;
 
+use avro_rs::schema::Schema;
+use avro_rs::types::Value;
+
+use super::error::DeviceError;
+
 pub trait Action {
-    fn input_schema(&self) -> &str;
-    fn output_schema(&self) -> &str;
-    // fn run(&self);
+    fn input_schema(&self) -> Schema;
+    fn output_schema(&self) -> Schema;
+    fn run(&self, input: Value) -> Result<Value, DeviceError>;
 }
 
 impl fmt::Debug for Box<dyn Action> {

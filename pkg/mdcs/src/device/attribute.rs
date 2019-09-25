@@ -1,6 +1,11 @@
 use std::fmt;
 use std::collections::HashSet;
 
+use avro_rs::schema::Schema;
+use avro_rs::types::Value;
+
+use super::error::DeviceError;
+
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub enum AttributeFlags {
     Read,
@@ -8,7 +13,7 @@ pub enum AttributeFlags {
 }
 
 pub trait Attribute {
-    fn schema(&self) -> &str;
+    fn schema(&self) -> Schema;
 
     fn readable(&self) -> bool;
     fn writable(&self) -> bool;
@@ -26,6 +31,9 @@ pub trait Attribute {
 
         return flags;
     }
+
+    fn read(&self) -> Result<Value, DeviceError>;
+    fn write(&self, value: Value) -> Result<(), DeviceError>;
 }
 
 impl fmt::Debug for Box<dyn Attribute> {

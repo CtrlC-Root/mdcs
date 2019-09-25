@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use super::attribute::Attribute;
 use super::action::Action;
 
+use super::error::{DeviceError, ErrorKind};
+
 pub enum Member {
     Attribute(Box<dyn Attribute>),
     Action(Box<dyn Action>)
@@ -32,11 +34,6 @@ pub struct Device {
     members: HashMap<String, Member>
 }
 
-pub enum DeviceError {
-    PathExists(String),
-    PathNotFound(String),
-}
-
 impl Device {
     pub fn new() -> Device {
         Device {
@@ -51,7 +48,7 @@ impl Device {
     pub fn insert(&mut self, path: &str, member: Member) -> Result<(), DeviceError> {
         let path = String::from(path);
         if self.members.contains_key(&path) {
-            Err(DeviceError::PathExists(path))
+            Err(DeviceError::new(ErrorKind::PathExists(path)))
         } else {
             self.members.insert(path, member);
             Ok(())
@@ -64,7 +61,7 @@ impl Device {
             self.members.remove(&path);
             Ok(())
         } else {
-            Err(DeviceError::PathNotFound(path))
+            Err(DeviceError::new(ErrorKind::PathNotFound(path)))
         }
     }
 
