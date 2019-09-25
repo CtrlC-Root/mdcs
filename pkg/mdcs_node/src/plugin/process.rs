@@ -39,5 +39,6 @@ impl PluginServer {
         stream.set_nonblocking(true)?;
 
         // TODO: process requests
+        Ok(())
     }
 }
