@@ -14,16 +14,12 @@ fn initial_connect() -> io::Result<TcpStream> {
     let address = listener.local_addr()?;
     println!("LISTENING {}:{}", address.ip(), address.port());
 
-    loop {
-        match listener.accept() {
-            Ok((stream, address)) => {
-                println!("ACCEPTED {}:{}", address.ip(), address.port());
-                return Ok(stream);
-            }
-            Err(error) => {
-                return Err(error);
-            }
+    match listener.accept() {
+        Ok((stream, address)) => {
+            println!("ACCEPTED {}:{}", address.ip(), address.port());
+            Ok(stream)
         }
+        Err(error) => Err(error)
     }
 }
 
