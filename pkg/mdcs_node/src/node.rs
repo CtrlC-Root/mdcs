@@ -1,3 +1,3 @@
 pub mod config;
 
-pub use crate::node::config::*;
+pub use config::*;
