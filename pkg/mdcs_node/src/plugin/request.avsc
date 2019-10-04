@@ -1,0 +1,40 @@
+[
+  {
+    "type": "enum",
+    "name": "Signal",
+    "doc": "Send a control signal",
+    "symbols": ["Quit"]
+  },
+  {
+    "type": "record",
+    "name": "DescribeDevice",
+    "doc": "Describe the device",
+    "fields": []
+  },
+  {
+    "type": "record",
+    "name": "ReadAttribute",
+    "doc": "Read attribute value",
+    "fields": [
+      {"name": "path", "type": "string"}
+    ]
+  },
+  {
+    "type": "record",
+    "name": "WriteAttribute",
+    "doc": "Write attribute value",
+    "fields": [
+      {"name": "path", "type": "string"},
+      {"name": "value", "type": "bytes"}
+    ]
+  },
+  {
+    "type": "record",
+    "name": "RunAction",
+    "doc": "Run an action",
+    "fields": [
+      {"name": "path", "type": "string"},
+      {"name": "input", "type": "bytes"}
+    ]
+  }
+]

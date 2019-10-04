@@ -1,0 +1,82 @@
+[
+  {
+    "type": "enum",
+    "name": "Status",
+    "symbols": ["Ok"]
+  },
+  {
+    "type": "record",
+    "name": "Error",
+    "fields": [
+      {"name": "message", "type": "string"},
+      {"name": "path", "type": ["null", "string"]}
+    ]
+  },
+
+  {
+    "type": "record",
+    "name": "Device",
+    "doc": "Device description",
+    "fields": [
+      {"name": "name", "type": "string"},
+      {
+        "name": "attributes",
+        "type": {
+          "name": "AttributeList",
+          "type": "array",
+          "items": {
+            "type": "record",
+            "name": "Attribute",
+            "fields": [
+              {"name": "path", "type": "string"},
+              {
+                "name": "flags",
+                "type": {
+                  "name": "AttributeFlags",
+                  "type": "array",
+                  "items": "string"
+                }
+              },
+              {"name": "schema", "type": "string"}
+            ]
+          }
+        }
+      },
+      {
+        "name": "actions",
+        "type": {
+          "name": "ActionList",
+          "type": "array",
+          "items": {
+            "type": "record",
+            "name": "Action",
+            "fields": [
+              {"name": "path", "type": "string"},
+              {"name": "input_schema", "type": "string"},
+              {"name": "output_schema", "type": "string"}
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "type": "record",
+    "name": "AttributeValue",
+    "doc": "Attribute value",
+    "fields": [
+      {"name": "value", "type": "bytes"},
+      {"name": "time", "type": "long", "logicalType": "timestamp-millis"}
+    ]
+  },
+  {
+    "type": "record",
+    "name": "ActionResult",
+    "doc": "Action execution result",
+    "fields": [
+      {"name": "value", "type": "bytes"},
+      {"name": "start", "type": "long", "logicalType": "timestamp-millis"},
+      {"name": "end", "type": "long", "logicalType": "timestamp-millis"}
+    ]
+  }
+]
