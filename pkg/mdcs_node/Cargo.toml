@@ -8,3 +8,5 @@ edition = "2018"
 mdcs = { path = "../mdcs" }
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
+# avro-rs = "0.6"
+avro-rs = { git = "https://github.com/CtrlC-Root/avro-rs", branch = "dev" }

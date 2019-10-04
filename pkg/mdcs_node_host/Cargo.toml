@@ -7,5 +7,6 @@ edition = "2018"
 [dependencies]
 mdcs = { path = "../mdcs" }
 mdcs_node = { path = "../mdcs_node" }
-avro-rs = "0.6"
+# avro-rs = "0.6"
+avro-rs = { git = "https://github.com/CtrlC-Root/avro-rs", branch = "dev" }
 sensors = "0.2.1"
