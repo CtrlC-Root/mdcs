@@ -5,7 +5,7 @@ use avro_rs::types::Value;
 use sensors::{FeatureType, Sensors, SubfeatureType};
 
 use mdcs::device::{Attribute, Device, DeviceError, ErrorKind, Member};
-use mdcs_node::plugin::PluginServer;
+use mdcs_node::plugin::Server;
 
 struct TempAttribute {
     chip_address: i32,
@@ -72,6 +72,6 @@ fn main() {
     }
 
     let device_name = "host".to_string(); // TODO: read local hostname
-    let mut server = PluginServer::new(device_name, device);
+    let mut server = Server::new(device_name, device);
     server.run().unwrap();
 }

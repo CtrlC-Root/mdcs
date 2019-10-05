@@ -11,7 +11,7 @@ use mdcs::device::{AttributeFlags, Device, Member};
 use super::request::{self as req, PluginRequest};
 use super::response::{self as resp, PluginResponse};
 
-pub struct PluginServer {
+pub struct Server {
     name: String,
     device: Device,
     signal_quit: bool,
@@ -31,9 +31,9 @@ fn initial_connect() -> io::Result<TcpStream> {
     }
 }
 
-impl PluginServer {
-    pub fn new(name: String, device: Device) -> PluginServer {
-        PluginServer {
+impl Server {
+    pub fn new(name: String, device: Device) -> Server {
+        Server {
             name,
             device,
             signal_quit: false,
