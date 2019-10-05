@@ -29,7 +29,7 @@ pub struct Action {
 pub struct Device {
     pub name: String,
     pub attributes: Vec<Attribute>,
-    pub actions: Vec<Attribute>
+    pub actions: Vec<Action>
 }
 
 #[derive(Debug, Serialize, Deserialize)]

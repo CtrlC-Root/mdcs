@@ -13,6 +13,7 @@ use avro_rs::{
 };
 
 use mdcs::device::{
+    AttributeFlags,
     Member,
     Device
 };
@@ -27,6 +28,7 @@ use super::response::{
 };
 
 pub struct PluginServer {
+    name: String,
     device: Device,
     signal_quit: bool
 }
@@ -46,8 +48,9 @@ fn initial_connect() -> io::Result<TcpStream> {
 }
 
 impl PluginServer {
-    pub fn new(device: Device) -> PluginServer {
+    pub fn new(name: String, device: Device) -> PluginServer {
         PluginServer {
+            name,
             device,
             signal_quit: false
         }
@@ -63,10 +66,70 @@ impl PluginServer {
     }
 
     fn describe_device(&mut self) -> PluginResponse {
-        // TODO: implement this
-        PluginResponse::Error(resp::Error {
-            message: String::from("Not Implemented"),
-            path: None
+        let mut attributes: Vec<resp::Attribute> = vec![];
+        let mut actions: Vec<resp::Action> = vec![];
+
+        for member in self.device.iter() {
+            match member {
+                (path, Member::Attribute(attribute)) => {
+                    let mut flags: Vec<String> = vec![];
+                    for flag in attribute.flags() {
+                        flags.push(match flag {
+                            AttributeFlags::Read => "read".to_string(),
+                            AttributeFlags::Write => "write".to_string()
+                        });
+                    }
+
+                    let schema = match serde_json::to_string(&attribute.schema()) {
+                        Ok(schema) => schema,
+                        Err(error) => {
+                            return PluginResponse::Error(resp::Error {
+                                message: format!("Failed to serialize attribute schema: {}", error),
+                                path: Some(path.clone())
+                            });
+                        }
+                    };
+
+                    attributes.push(resp::Attribute {
+                        path: path.clone(),
+                        flags,
+                        schema
+                    });
+                }
+                (path, Member::Action(action)) => {
+                    let input_schema = match serde_json::to_string(&action.input_schema()) {
+                        Ok(schema) => schema,
+                        Err(error) => {
+                            return PluginResponse::Error(resp::Error {
+                                message: format!("Failed to serialize action input schema: {}", error),
+                                path: Some(path.clone())
+                            });
+                        }
+                    };
+
+                    let output_schema = match serde_json::to_string(&action.output_schema()) {
+                        Ok(schema) => schema,
+                        Err(error) => {
+                            return PluginResponse::Error(resp::Error {
+                                message: format!("Failed to serialize action output schema: {}", error),
+                                path: Some(path.clone())
+                            });
+                        }
+                    };
+
+                    actions.push(resp::Action {
+                        path: path.clone(),
+                        input_schema,
+                        output_schema
+                    })
+                }
+            }
+        }
+
+        PluginResponse::Device(resp::Device {
+            name: self.name.clone(),
+            attributes,
+            actions
         })
     }
 

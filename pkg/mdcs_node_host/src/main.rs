@@ -83,6 +83,7 @@ fn main() {
         }
     }
 
-    let mut server = PluginServer::new(device);
+    let device_name = "host".to_string(); // TODO: read local hostname
+    let mut server = PluginServer::new(device_name, device);
     server.run().unwrap();
 }
