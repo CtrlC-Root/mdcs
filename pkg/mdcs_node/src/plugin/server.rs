@@ -342,6 +342,7 @@ impl Server {
             writer
                 .append_ser(response)
                 .expect("Failed to serialize response");
+
             writer.flush().expect("Failed to flush Avro writer");
 
             // quit if necessary
