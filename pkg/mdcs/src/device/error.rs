@@ -1,4 +1,5 @@
 use std::fmt;
+use std::ops::Deref;
 use std::error::Error;
 
 #[derive(Debug)]
@@ -30,6 +31,12 @@ impl fmt::Display for ErrorKind {
 pub struct DeviceError {
     kind: ErrorKind,
     source: Option<Box<dyn Error>>
+}
+
+impl Error for DeviceError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        self.source.as_ref().map(|e| e.deref())
+    }
 }
 
 impl fmt::Display for DeviceError {
