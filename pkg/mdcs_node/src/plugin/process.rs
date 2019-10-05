@@ -74,7 +74,7 @@ impl PluginServer {
         // retrieve the device attribute
         let attribute = match self.device.get(&args.path) {
             Some(Member::Attribute(attribute)) => attribute,
-            Some(Member::Action(_)) => {
+            Some(_) => {
                 return PluginResponse::Error(resp::Error {
                     message: "Path does not refer to an attribute".to_string(),
                     path: Some(args.path.clone())
@@ -97,7 +97,7 @@ impl PluginServer {
         }
 
         // retrieve the current system time
-        let timestamp = avro::timestamp();
+        let time = avro::timestamp();
 
         // read the attribute value
         let value = match attribute.read() {
@@ -112,7 +112,7 @@ impl PluginServer {
 
         // encode the attribute value
         let schema = attribute.schema();
-        let encoded_value = match to_avro_datum(&schema, value) {
+        let value = match to_avro_datum(&schema, value) {
             Ok(bytes) => bytes,
             Err(error) => {
                 return PluginResponse::Error(resp::Error {
@@ -123,8 +123,8 @@ impl PluginServer {
         };
 
         PluginResponse::AttributeValue(resp::AttributeValue {
-            value: encoded_value,
-            time: timestamp
+            value,
+            time
         })
     }
 
@@ -132,7 +132,7 @@ impl PluginServer {
         // retrieve the device attribute
         let attribute = match self.device.get(&args.path) {
             Some(Member::Attribute(attribute)) => attribute,
-            Some(Member::Action(_)) => {
+            Some(_) => {
                 return PluginResponse::Error(resp::Error {
                     message: "Path does not refer to an attribute".to_string(),
                     path: Some(args.path.clone())
@@ -170,7 +170,7 @@ impl PluginServer {
         };
 
         // retrieve the current system time
-        let timestamp = avro::timestamp();
+        let time = avro::timestamp();
 
         // write the attribute value
         if let Err(error) = attribute.write(decoded_value) {
@@ -181,16 +181,77 @@ impl PluginServer {
         };
 
         PluginResponse::AttributeValue(resp::AttributeValue {
-            value: value,
-            time: timestamp
+            value,
+            time
         })
     }
 
     fn run_action(&mut self, args: &req::RunAction) -> PluginResponse {
-        // TODO: implement this
-        PluginResponse::Error(resp::Error {
-            message: String::from("Not Implemented"),
-            path: Some(args.path.clone())
+        // retrieve the device action
+        let action = match self.device.get(&args.path) {
+            Some(Member::Action(action)) => action,
+            Some(_) => {
+                return PluginResponse::Error(resp::Error {
+                    message: "Path does not refer to an action".to_string(),
+                    path: Some(args.path.clone())
+                });
+            }
+            None => {
+                return PluginResponse::Error(resp::Error {
+                    message: "Path not found".to_string(),
+                    path: Some(args.path.clone())
+                });
+            }
+        };
+
+        // decode the input value
+        let input_schema = action.input_schema();
+        let input = args.input.clone();
+        let mut buffer: &[u8] = &input[..];
+
+        let input_value = match from_avro_datum(&input_schema, &mut buffer, None) {
+            Ok(value) => value,
+            Err(error) => {
+                return PluginResponse::Error(resp::Error {
+                    message: format!("Failed to unserialize input value: {}", error),
+                    path: Some(args.path.clone())
+                });
+            }
+        };
+
+        // record start time
+        let start = avro::timestamp();
+
+        // run the action
+        let output_value = match action.run(input_value) {
+            Ok(output) => output,
+            Err(error) => {
+                return PluginResponse::Error(resp::Error {
+                    message: format!("Failed to run action: {}", error),
+                    path: Some(args.path.clone())
+                });
+            }
+        };
+
+        // record end time
+        let end = avro::timestamp();
+
+        // encode the output value
+        let output_schema = action.output_schema();
+        let output = match to_avro_datum(&output_schema, output_value) {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                return PluginResponse::Error(resp::Error {
+                    message: format!("Failed to serialize output value: {}", error),
+                    path: Some(args.path.clone())
+                });
+            }
+        };
+
+        PluginResponse::ActionResult(resp::ActionResult {
+            output,
+            start,
+            end
         })
     }
 
