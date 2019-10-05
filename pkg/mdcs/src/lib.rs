@@ -1,2 +1,2 @@
-pub mod device;
 pub mod avro;
+pub mod device;

@@ -1,32 +1,32 @@
+use std::collections::HashMap;
+use std::error::Error;
 use std::fs;
 use std::net::IpAddr;
-use std::error::Error;
-use std::collections::HashMap;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NetworkConfig {
     host: IpAddr,
-    port: u16
+    port: u16,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PluginConfig {
     pub description: String,
-    pub command: String
+    pub command: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DeviceConfig {
-    pub plugin: String
+    pub plugin: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub network: NetworkConfig,
     pub plugins: HashMap<String, PluginConfig>,
-    pub devices: Vec<DeviceConfig>
+    pub devices: Vec<DeviceConfig>,
 }
 
 impl Config {

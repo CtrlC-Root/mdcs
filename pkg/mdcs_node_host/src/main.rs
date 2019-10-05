@@ -1,25 +1,15 @@
 use std::result::Result;
 
-use mdcs::device::{
-    Device,
-    Member,
-    Attribute,
-    DeviceError,
-    ErrorKind
-};
+use mdcs::device::{Attribute, Device, DeviceError, ErrorKind, Member};
 use mdcs_node::plugin::PluginServer;
 
 use avro_rs::schema::Schema;
 use avro_rs::types::Value;
-use sensors::{
-    Sensors,
-    FeatureType,
-    SubfeatureType
-};
+use sensors::{FeatureType, Sensors, SubfeatureType};
 
 struct TempAttribute {
     chip_address: i32,
-    feature_number: i32
+    feature_number: i32,
 }
 
 impl Attribute for TempAttribute {
@@ -49,7 +39,7 @@ impl Attribute for TempAttribute {
 
         match subfeature.get_value() {
             Ok(value) => Ok(Value::Double(value)),
-            Err(error) => Err(DeviceError::from(Box::new(error)))
+            Err(error) => Err(DeviceError::from(Box::new(error))),
         }
     }
 }
@@ -67,13 +57,11 @@ fn main() {
             let feature_number = feature.number();
 
             let mut attribute: Option<Box<dyn Attribute>> = match feature.feature_type() {
-                FeatureType::SENSORS_FEATURE_TEMP => {
-                    Some(Box::new(TempAttribute {
-                        chip_address,
-                        feature_number
-                    }))
-                }
-                _ => None
+                FeatureType::SENSORS_FEATURE_TEMP => Some(Box::new(TempAttribute {
+                    chip_address,
+                    feature_number,
+                })),
+                _ => None,
             };
 
             if let Some(attribute) = attribute.take() {

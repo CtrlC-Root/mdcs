@@ -1,43 +1,35 @@
+use std::collections::HashMap;
 use std::fmt;
 use std::result::Result;
-use std::collections::HashMap;
 
-use super::attribute::Attribute;
 use super::action::Action;
+use super::attribute::Attribute;
 
 use super::error::{DeviceError, ErrorKind};
 
 pub enum Member {
     Attribute(Box<dyn Attribute>),
-    Action(Box<dyn Action>)
+    Action(Box<dyn Action>),
 }
 
 impl fmt::Debug for Member {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Member::Attribute(attribute) => {
-                fmt.debug_tuple("Attribute")
-                    .field(attribute)
-                    .finish()
-            }
-            Member::Action(action) => {
-                fmt.debug_tuple("Action")
-                    .field(action)
-                    .finish()
-            }
+            Member::Attribute(attribute) => fmt.debug_tuple("Attribute").field(attribute).finish(),
+            Member::Action(action) => fmt.debug_tuple("Action").field(action).finish(),
         }
     }
 }
 
 #[derive(Debug)]
 pub struct Device {
-    members: HashMap<String, Member>
+    members: HashMap<String, Member>,
 }
 
 impl Device {
     pub fn new() -> Device {
         Device {
-            members: HashMap::new()
+            members: HashMap::new(),
         }
     }
 

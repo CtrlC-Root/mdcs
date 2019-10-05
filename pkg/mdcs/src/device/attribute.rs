@@ -1,5 +1,5 @@
-use std::fmt;
 use std::collections::HashSet;
+use std::fmt;
 
 use avro_rs::schema::Schema;
 use avro_rs::types::Value;
@@ -9,7 +9,7 @@ use super::error::{DeviceError, ErrorKind};
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub enum AttributeFlags {
     Read,
-    Write
+    Write,
 }
 
 pub trait Attribute {

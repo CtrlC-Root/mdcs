@@ -1,6 +1,6 @@
+use std::error::Error;
 use std::fmt;
 use std::ops::Deref;
-use std::error::Error;
 
 #[derive(Debug)]
 pub enum ErrorKind {
@@ -8,7 +8,7 @@ pub enum ErrorKind {
     Disconnected,
     OutOfSync,
     PathExists(String),
-    PathNotFound(String)
+    PathNotFound(String),
 }
 
 impl fmt::Display for ErrorKind {
@@ -17,12 +17,8 @@ impl fmt::Display for ErrorKind {
             ErrorKind::Generic => write!(fmt, "General failure"),
             ErrorKind::Disconnected => write!(fmt, "Device disconnected"),
             ErrorKind::OutOfSync => write!(fmt, "Device state not synchronized"),
-            ErrorKind::PathExists(path) => {
-                write!(fmt, "Device path already exists: {}", path)
-            }
-            ErrorKind::PathNotFound(path) => {
-                write!(fmt, "Device path not found: {}", path)
-            }
+            ErrorKind::PathExists(path) => write!(fmt, "Device path already exists: {}", path),
+            ErrorKind::PathNotFound(path) => write!(fmt, "Device path not found: {}", path),
         }
     }
 }
@@ -30,7 +26,7 @@ impl fmt::Display for ErrorKind {
 #[derive(Debug)]
 pub struct DeviceError {
     kind: ErrorKind,
-    source: Option<Box<dyn Error>>
+    source: Option<Box<dyn Error>>,
 }
 
 impl Error for DeviceError {
@@ -51,16 +47,13 @@ impl fmt::Display for DeviceError {
 
 impl DeviceError {
     pub fn new(kind: ErrorKind) -> DeviceError {
-        DeviceError {
-            kind,
-            source: None
-        }
+        DeviceError { kind, source: None }
     }
 
     pub fn from(source: Box<dyn Error>) -> DeviceError {
         DeviceError {
             kind: ErrorKind::Generic,
-            source: Some(source)
+            source: Some(source),
         }
     }
 }

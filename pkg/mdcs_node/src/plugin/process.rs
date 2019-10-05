@@ -1,36 +1,19 @@
-use std::io;
 use std::error::Error;
-use std::result::Result;
+use std::io;
 use std::net::{TcpListener, TcpStream};
+use std::result::Result;
 
-use avro_rs::{
-    Schema,
-    Reader,
-    Writer,
-    from_value,
-    to_avro_datum,
-    from_avro_datum
-};
+use avro_rs::{from_avro_datum, from_value, to_avro_datum, Reader, Schema, Writer};
 
-use mdcs::device::{
-    AttributeFlags,
-    Member,
-    Device
-};
+use super::request::{self as req, PluginRequest};
+use super::response::{self as resp, PluginResponse};
 use mdcs::avro;
-use super::request::{
-    self as req,
-    PluginRequest
-};
-use super::response::{
-    self as resp,
-    PluginResponse
-};
+use mdcs::device::{AttributeFlags, Device, Member};
 
 pub struct PluginServer {
     name: String,
     device: Device,
-    signal_quit: bool
+    signal_quit: bool,
 }
 
 fn initial_connect() -> io::Result<TcpStream> {
@@ -43,7 +26,7 @@ fn initial_connect() -> io::Result<TcpStream> {
             println!("ACCEPTED {}:{}", address.ip(), address.port());
             Ok(stream)
         }
-        Err(error) => Err(error)
+        Err(error) => Err(error),
     }
 }
 
@@ -52,7 +35,7 @@ impl PluginServer {
         PluginServer {
             name,
             device,
-            signal_quit: false
+            signal_quit: false,
         }
     }
 
@@ -76,7 +59,7 @@ impl PluginServer {
                     for flag in attribute.flags() {
                         flags.push(match flag {
                             AttributeFlags::Read => "read".to_string(),
-                            AttributeFlags::Write => "write".to_string()
+                            AttributeFlags::Write => "write".to_string(),
                         });
                     }
 
@@ -85,7 +68,7 @@ impl PluginServer {
                         Err(error) => {
                             return PluginResponse::Error(resp::Error {
                                 message: format!("Failed to serialize attribute schema: {}", error),
-                                path: Some(path.clone())
+                                path: Some(path.clone()),
                             });
                         }
                     };
@@ -93,7 +76,7 @@ impl PluginServer {
                     attributes.push(resp::Attribute {
                         path: path.clone(),
                         flags,
-                        schema
+                        schema,
                     });
                 }
                 (path, Member::Action(action)) => {
@@ -101,8 +84,11 @@ impl PluginServer {
                         Ok(schema) => schema,
                         Err(error) => {
                             return PluginResponse::Error(resp::Error {
-                                message: format!("Failed to serialize action input schema: {}", error),
-                                path: Some(path.clone())
+                                message: format!(
+                                    "Failed to serialize action input schema: {}",
+                                    error
+                                ),
+                                path: Some(path.clone()),
                             });
                         }
                     };
@@ -111,8 +97,11 @@ impl PluginServer {
                         Ok(schema) => schema,
                         Err(error) => {
                             return PluginResponse::Error(resp::Error {
-                                message: format!("Failed to serialize action output schema: {}", error),
-                                path: Some(path.clone())
+                                message: format!(
+                                    "Failed to serialize action output schema: {}",
+                                    error
+                                ),
+                                path: Some(path.clone()),
                             });
                         }
                     };
@@ -120,7 +109,7 @@ impl PluginServer {
                     actions.push(resp::Action {
                         path: path.clone(),
                         input_schema,
-                        output_schema
+                        output_schema,
                     })
                 }
             }
@@ -129,7 +118,7 @@ impl PluginServer {
         PluginResponse::Device(resp::Device {
             name: self.name.clone(),
             attributes,
-            actions
+            actions,
         })
     }
 
@@ -140,13 +129,13 @@ impl PluginServer {
             Some(_) => {
                 return PluginResponse::Error(resp::Error {
                     message: "Path does not refer to an attribute".to_string(),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
             None => {
                 return PluginResponse::Error(resp::Error {
                     message: "Path not found".to_string(),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
         };
@@ -155,7 +144,7 @@ impl PluginServer {
         if !attribute.readable() {
             return PluginResponse::Error(resp::Error {
                 message: "Attribute not readable".to_string(),
-                path: Some(args.path.clone())
+                path: Some(args.path.clone()),
             });
         }
 
@@ -168,7 +157,7 @@ impl PluginServer {
             Err(error) => {
                 return PluginResponse::Error(resp::Error {
                     message: format!("Failed to read attribute: {}", error),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
         };
@@ -180,15 +169,12 @@ impl PluginServer {
             Err(error) => {
                 return PluginResponse::Error(resp::Error {
                     message: format!("Failed to serialize value: {}", error),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
         };
 
-        PluginResponse::AttributeValue(resp::AttributeValue {
-            value,
-            time
-        })
+        PluginResponse::AttributeValue(resp::AttributeValue { value, time })
     }
 
     fn write_attribute(&mut self, args: &req::WriteAttribute) -> PluginResponse {
@@ -198,13 +184,13 @@ impl PluginServer {
             Some(_) => {
                 return PluginResponse::Error(resp::Error {
                     message: "Path does not refer to an attribute".to_string(),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
             None => {
                 return PluginResponse::Error(resp::Error {
                     message: "Path not found".to_string(),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
         };
@@ -213,7 +199,7 @@ impl PluginServer {
         if !attribute.writable() {
             return PluginResponse::Error(resp::Error {
                 message: "Attribute not writable".to_string(),
-                path: Some(args.path.clone())
+                path: Some(args.path.clone()),
             });
         }
 
@@ -227,7 +213,7 @@ impl PluginServer {
             Err(error) => {
                 return PluginResponse::Error(resp::Error {
                     message: format!("Failed to unserialize value: {}", error),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
         };
@@ -239,14 +225,11 @@ impl PluginServer {
         if let Err(error) = attribute.write(decoded_value) {
             return PluginResponse::Error(resp::Error {
                 message: format!("Failed to write attribute: {}", error),
-                path: Some(args.path.clone())
+                path: Some(args.path.clone()),
             });
         };
 
-        PluginResponse::AttributeValue(resp::AttributeValue {
-            value,
-            time
-        })
+        PluginResponse::AttributeValue(resp::AttributeValue { value, time })
     }
 
     fn run_action(&mut self, args: &req::RunAction) -> PluginResponse {
@@ -256,13 +239,13 @@ impl PluginServer {
             Some(_) => {
                 return PluginResponse::Error(resp::Error {
                     message: "Path does not refer to an action".to_string(),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
             None => {
                 return PluginResponse::Error(resp::Error {
                     message: "Path not found".to_string(),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
         };
@@ -277,7 +260,7 @@ impl PluginServer {
             Err(error) => {
                 return PluginResponse::Error(resp::Error {
                     message: format!("Failed to unserialize input value: {}", error),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
         };
@@ -291,7 +274,7 @@ impl PluginServer {
             Err(error) => {
                 return PluginResponse::Error(resp::Error {
                     message: format!("Failed to run action: {}", error),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
         };
@@ -306,16 +289,12 @@ impl PluginServer {
             Err(error) => {
                 return PluginResponse::Error(resp::Error {
                     message: format!("Failed to serialize output value: {}", error),
-                    path: Some(args.path.clone())
+                    path: Some(args.path.clone()),
                 });
             }
         };
 
-        PluginResponse::ActionResult(resp::ActionResult {
-            output,
-            start,
-            end
-        })
+        PluginResponse::ActionResult(resp::ActionResult { output, start, end })
     }
 
     fn process_request(&mut self, request: &PluginRequest) -> PluginResponse {
@@ -351,17 +330,17 @@ impl PluginServer {
 
             // process the request into a response
             let response = match request {
-                Ok(request) => {
-                    self.process_request(&request)
-                },
+                Ok(request) => self.process_request(&request),
                 Err(error) => PluginResponse::Error(resp::Error {
                     message: String::from(format!("{}", error)),
-                    path: None
-                })
+                    path: None,
+                }),
             };
 
             // send the response
-            writer.append_ser(response).expect("Failed to serialize response");
+            writer
+                .append_ser(response)
+                .expect("Failed to serialize response");
             writer.flush().expect("Failed to flush Avro writer");
 
             // quit if necessary

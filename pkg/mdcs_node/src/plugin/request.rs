@@ -1,29 +1,28 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Signal {
-    Quit
+    Quit,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DescribeDevice {
-}
+pub struct DescribeDevice {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ReadAttribute {
-    pub path: String
+    pub path: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WriteAttribute {
     pub path: String,
-    pub value: Vec<u8>
+    pub value: Vec<u8>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RunAction {
     pub path: String,
-    pub input: Vec<u8>
+    pub input: Vec<u8>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
