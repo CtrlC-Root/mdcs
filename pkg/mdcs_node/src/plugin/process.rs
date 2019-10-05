@@ -1,8 +1,6 @@
 use std::io;
 use std::error::Error;
 use std::result::Result;
-use std::convert::TryFrom;
-use std::time::SystemTime;
 use std::net::{TcpListener, TcpStream};
 
 use avro_rs::{
@@ -18,6 +16,7 @@ use mdcs::device::{
     Member,
     Device
 };
+use mdcs::avro;
 use super::request::{
     self as req,
     PluginRequest
@@ -98,14 +97,7 @@ impl PluginServer {
         }
 
         // retrieve the current system time
-        // https://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29
-        let system_millis = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .expect("Failed to retrieve unix timestamp")
-            .as_millis();
-
-        let timestamp = i64::try_from(system_millis)
-            .expect("Failed to convert unix timestamp to signed long");
+        let timestamp = avro::timestamp();
 
         // read the attribute value
         let value = match attribute.read() {
@@ -178,14 +170,7 @@ impl PluginServer {
         };
 
         // retrieve the current system time
-        // https://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29
-        let system_millis = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .expect("Failed to retrieve unix timestamp")
-            .as_millis();
-
-        let timestamp = i64::try_from(system_millis)
-            .expect("Failed to convert unix timestamp to signed long");
+        let timestamp = avro::timestamp();
 
         // write the attribute value
         if let Err(error) = attribute.write(decoded_value) {
