@@ -5,10 +5,11 @@ use std::result::Result;
 
 use avro_rs::{from_avro_datum, from_value, to_avro_datum, Reader, Schema, Writer};
 
-use super::request::{self as req, PluginRequest};
-use super::response::{self as resp, PluginResponse};
 use mdcs::avro;
 use mdcs::device::{AttributeFlags, Device, Member};
+
+use super::request::{self as req, PluginRequest};
+use super::response::{self as resp, PluginResponse};
 
 pub struct PluginServer {
     name: String,

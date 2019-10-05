@@ -4,7 +4,6 @@ use std::result::Result;
 
 use super::action::Action;
 use super::attribute::Attribute;
-
 use super::error::{DeviceError, ErrorKind};
 
 pub enum Member {

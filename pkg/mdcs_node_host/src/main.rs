@@ -1,11 +1,11 @@
 use std::result::Result;
 
-use mdcs::device::{Attribute, Device, DeviceError, ErrorKind, Member};
-use mdcs_node::plugin::PluginServer;
-
 use avro_rs::schema::Schema;
 use avro_rs::types::Value;
 use sensors::{FeatureType, Sensors, SubfeatureType};
+
+use mdcs::device::{Attribute, Device, DeviceError, ErrorKind, Member};
+use mdcs_node::plugin::PluginServer;
 
 struct TempAttribute {
     chip_address: i32,
