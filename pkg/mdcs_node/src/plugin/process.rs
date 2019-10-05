@@ -1,6 +1,8 @@
 use std::io;
 use std::error::Error;
 use std::result::Result;
+use std::convert::TryFrom;
+use std::time::SystemTime;
 use std::net::{TcpListener, TcpStream};
 
 use avro_rs::{
@@ -8,12 +10,22 @@ use avro_rs::{
     Reader,
     Writer,
     from_value,
-    to_avro_datum
+    to_avro_datum,
+    from_avro_datum
 };
 
-use mdcs::device::{Member, Device};
-use super::request::{self as req, PluginRequest};
-use super::response::{self as resp, PluginResponse};
+use mdcs::device::{
+    Member,
+    Device
+};
+use super::request::{
+    self as req,
+    PluginRequest
+};
+use super::response::{
+    self as resp,
+    PluginResponse
+};
 
 pub struct PluginServer {
     device: Device,
@@ -60,18 +72,132 @@ impl PluginServer {
     }
 
     fn read_attribute(&mut self, args: &req::ReadAttribute) -> PluginResponse {
-        // TODO: implement this
-        PluginResponse::Error(resp::Error {
-            message: String::from("Not Implemented"),
-            path: Some(args.path.clone())
+        // retrieve the device attribute
+        let attribute = match self.device.get(&args.path) {
+            Some(Member::Attribute(attribute)) => attribute,
+            Some(Member::Action(_)) => {
+                return PluginResponse::Error(resp::Error {
+                    message: "Path does not refer to an attribute".to_string(),
+                    path: Some(args.path.clone())
+                });
+            }
+            None => {
+                return PluginResponse::Error(resp::Error {
+                    message: "Path not found".to_string(),
+                    path: Some(args.path.clone())
+                });
+            }
+        };
+
+        // verify the attribute is readable
+        if !attribute.readable() {
+            return PluginResponse::Error(resp::Error {
+                message: "Attribute not readable".to_string(),
+                path: Some(args.path.clone())
+            });
+        }
+
+        // retrieve the current system time
+        // https://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29
+        let system_millis = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .expect("Failed to retrieve unix timestamp")
+            .as_millis();
+
+        let timestamp = i64::try_from(system_millis)
+            .expect("Failed to convert unix timestamp to signed long");
+
+        // read the attribute value
+        let value = match attribute.read() {
+            Ok(value) => value,
+            Err(error) => {
+                return PluginResponse::Error(resp::Error {
+                    message: format!("Failed to read attribute: {}", error),
+                    path: Some(args.path.clone())
+                });
+            }
+        };
+
+        // encode the attribute value
+        let schema = attribute.schema();
+        let encoded_value = match to_avro_datum(&schema, value) {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                return PluginResponse::Error(resp::Error {
+                    message: format!("Failed to serialize value: {}", error),
+                    path: Some(args.path.clone())
+                });
+            }
+        };
+
+        PluginResponse::AttributeValue(resp::AttributeValue {
+            value: encoded_value,
+            time: timestamp
         })
     }
 
     fn write_attribute(&mut self, args: &req::WriteAttribute) -> PluginResponse {
-        // TODO: implement this
-        PluginResponse::Error(resp::Error {
-            message: String::from("Not Implemented"),
-            path: Some(args.path.clone())
+        // retrieve the device attribute
+        let attribute = match self.device.get(&args.path) {
+            Some(Member::Attribute(attribute)) => attribute,
+            Some(Member::Action(_)) => {
+                return PluginResponse::Error(resp::Error {
+                    message: "Path does not refer to an attribute".to_string(),
+                    path: Some(args.path.clone())
+                });
+            }
+            None => {
+                return PluginResponse::Error(resp::Error {
+                    message: "Path not found".to_string(),
+                    path: Some(args.path.clone())
+                });
+            }
+        };
+
+        // verify the attribute is writable
+        if !attribute.writable() {
+            return PluginResponse::Error(resp::Error {
+                message: "Attribute not writable".to_string(),
+                path: Some(args.path.clone())
+            });
+        }
+
+        // decode the attribute value
+        let schema = attribute.schema();
+        let value = args.value.clone();
+        let mut buffer: &[u8] = &value[..];
+
+        let decoded_value = match from_avro_datum(&schema, &mut buffer, None) {
+            Ok(value) => value,
+            Err(error) => {
+                return PluginResponse::Error(resp::Error {
+                    message: format!("Failed to unserialize value: {}", error),
+                    path: Some(args.path.clone())
+                });
+            }
+        };
+
+        // retrieve the current system time
+        // https://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29
+        let system_millis = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .expect("Failed to retrieve unix timestamp")
+            .as_millis();
+
+        let timestamp = i64::try_from(system_millis)
+            .expect("Failed to convert unix timestamp to signed long");
+
+        // write the attribute value
+        if let Err(error) = attribute.write(decoded_value) {
+            return PluginResponse::Error(resp::Error {
+                message: format!("Failed to write attribute: {}", error),
+                path: Some(args.path.clone())
+            });
+        };
+
+        PluginResponse::AttributeValue(resp::AttributeValue {
+            value: value,
+            time: timestamp
         })
     }
 
