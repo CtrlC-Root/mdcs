@@ -26,7 +26,7 @@ pub struct RunAction {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum PluginRequest {
+pub enum Request {
     Signal(Signal),
     DescribeDevice(DescribeDevice),
     ReadAttribute(ReadAttribute),

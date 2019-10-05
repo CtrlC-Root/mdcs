@@ -46,7 +46,7 @@ pub struct ActionResult {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum PluginResponse {
+pub enum Response {
     Status(Status),
     Error(Error),
     Device(Device),

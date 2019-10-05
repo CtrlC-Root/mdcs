@@ -8,8 +8,8 @@ use avro_rs::{from_avro_datum, from_value, to_avro_datum, Reader, Schema, Writer
 use mdcs::avro;
 use mdcs::device::{AttributeFlags, Device, Member};
 
-use super::request::{self as req, PluginRequest};
-use super::response::{self as resp, PluginResponse};
+use super::request::{self as req, Request};
+use super::response::{self as resp, Response};
 
 pub struct Server {
     name: String,
@@ -40,16 +40,16 @@ impl Server {
         }
     }
 
-    fn signal(&mut self, signal: &req::Signal) -> PluginResponse {
+    fn signal(&mut self, signal: &req::Signal) -> Response {
         match signal {
             req::Signal::Quit => {
                 self.signal_quit = true;
-                PluginResponse::Status(resp::Status::Ok)
+                Response::Status(resp::Status::Ok)
             }
         }
     }
 
-    fn describe_device(&mut self) -> PluginResponse {
+    fn describe_device(&mut self) -> Response {
         let mut attributes: Vec<resp::Attribute> = vec![];
         let mut actions: Vec<resp::Action> = vec![];
 
@@ -67,7 +67,7 @@ impl Server {
                     let schema = match serde_json::to_string(&attribute.schema()) {
                         Ok(schema) => schema,
                         Err(error) => {
-                            return PluginResponse::Error(resp::Error {
+                            return Response::Error(resp::Error {
                                 message: format!("Failed to serialize attribute schema: {}", error),
                                 path: Some(path.clone()),
                             });
@@ -84,7 +84,7 @@ impl Server {
                     let input_schema = match serde_json::to_string(&action.input_schema()) {
                         Ok(schema) => schema,
                         Err(error) => {
-                            return PluginResponse::Error(resp::Error {
+                            return Response::Error(resp::Error {
                                 message: format!(
                                     "Failed to serialize action input schema: {}",
                                     error
@@ -97,7 +97,7 @@ impl Server {
                     let output_schema = match serde_json::to_string(&action.output_schema()) {
                         Ok(schema) => schema,
                         Err(error) => {
-                            return PluginResponse::Error(resp::Error {
+                            return Response::Error(resp::Error {
                                 message: format!(
                                     "Failed to serialize action output schema: {}",
                                     error
@@ -116,25 +116,25 @@ impl Server {
             }
         }
 
-        PluginResponse::Device(resp::Device {
+        Response::Device(resp::Device {
             name: self.name.clone(),
             attributes,
             actions,
         })
     }
 
-    fn read_attribute(&mut self, args: &req::ReadAttribute) -> PluginResponse {
+    fn read_attribute(&mut self, args: &req::ReadAttribute) -> Response {
         // retrieve the device attribute
         let attribute = match self.device.get(&args.path) {
             Some(Member::Attribute(attribute)) => attribute,
             Some(_) => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: "Path does not refer to an attribute".to_string(),
                     path: Some(args.path.clone()),
                 });
             }
             None => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: "Path not found".to_string(),
                     path: Some(args.path.clone()),
                 });
@@ -143,7 +143,7 @@ impl Server {
 
         // verify the attribute is readable
         if !attribute.readable() {
-            return PluginResponse::Error(resp::Error {
+            return Response::Error(resp::Error {
                 message: "Attribute not readable".to_string(),
                 path: Some(args.path.clone()),
             });
@@ -156,7 +156,7 @@ impl Server {
         let value = match attribute.read() {
             Ok(value) => value,
             Err(error) => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: format!("Failed to read attribute: {}", error),
                     path: Some(args.path.clone()),
                 });
@@ -168,28 +168,28 @@ impl Server {
         let value = match to_avro_datum(&schema, value) {
             Ok(bytes) => bytes,
             Err(error) => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: format!("Failed to serialize value: {}", error),
                     path: Some(args.path.clone()),
                 });
             }
         };
 
-        PluginResponse::AttributeValue(resp::AttributeValue { value, time })
+        Response::AttributeValue(resp::AttributeValue { value, time })
     }
 
-    fn write_attribute(&mut self, args: &req::WriteAttribute) -> PluginResponse {
+    fn write_attribute(&mut self, args: &req::WriteAttribute) -> Response {
         // retrieve the device attribute
         let attribute = match self.device.get(&args.path) {
             Some(Member::Attribute(attribute)) => attribute,
             Some(_) => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: "Path does not refer to an attribute".to_string(),
                     path: Some(args.path.clone()),
                 });
             }
             None => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: "Path not found".to_string(),
                     path: Some(args.path.clone()),
                 });
@@ -198,7 +198,7 @@ impl Server {
 
         // verify the attribute is writable
         if !attribute.writable() {
-            return PluginResponse::Error(resp::Error {
+            return Response::Error(resp::Error {
                 message: "Attribute not writable".to_string(),
                 path: Some(args.path.clone()),
             });
@@ -212,7 +212,7 @@ impl Server {
         let decoded_value = match from_avro_datum(&schema, &mut buffer, None) {
             Ok(value) => value,
             Err(error) => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: format!("Failed to unserialize value: {}", error),
                     path: Some(args.path.clone()),
                 });
@@ -224,27 +224,27 @@ impl Server {
 
         // write the attribute value
         if let Err(error) = attribute.write(decoded_value) {
-            return PluginResponse::Error(resp::Error {
+            return Response::Error(resp::Error {
                 message: format!("Failed to write attribute: {}", error),
                 path: Some(args.path.clone()),
             });
         };
 
-        PluginResponse::AttributeValue(resp::AttributeValue { value, time })
+        Response::AttributeValue(resp::AttributeValue { value, time })
     }
 
-    fn run_action(&mut self, args: &req::RunAction) -> PluginResponse {
+    fn run_action(&mut self, args: &req::RunAction) -> Response {
         // retrieve the device action
         let action = match self.device.get(&args.path) {
             Some(Member::Action(action)) => action,
             Some(_) => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: "Path does not refer to an action".to_string(),
                     path: Some(args.path.clone()),
                 });
             }
             None => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: "Path not found".to_string(),
                     path: Some(args.path.clone()),
                 });
@@ -259,7 +259,7 @@ impl Server {
         let input_value = match from_avro_datum(&input_schema, &mut buffer, None) {
             Ok(value) => value,
             Err(error) => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: format!("Failed to unserialize input value: {}", error),
                     path: Some(args.path.clone()),
                 });
@@ -273,7 +273,7 @@ impl Server {
         let output_value = match action.run(input_value) {
             Ok(output) => output,
             Err(error) => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: format!("Failed to run action: {}", error),
                     path: Some(args.path.clone()),
                 });
@@ -288,23 +288,23 @@ impl Server {
         let output = match to_avro_datum(&output_schema, output_value) {
             Ok(bytes) => bytes,
             Err(error) => {
-                return PluginResponse::Error(resp::Error {
+                return Response::Error(resp::Error {
                     message: format!("Failed to serialize output value: {}", error),
                     path: Some(args.path.clone()),
                 });
             }
         };
 
-        PluginResponse::ActionResult(resp::ActionResult { output, start, end })
+        Response::ActionResult(resp::ActionResult { output, start, end })
     }
 
-    fn process_request(&mut self, request: &PluginRequest) -> PluginResponse {
+    fn process_request(&mut self, request: &Request) -> Response {
         match request {
-            PluginRequest::Signal(signal) => self.signal(signal),
-            PluginRequest::DescribeDevice(_) => self.describe_device(),
-            PluginRequest::ReadAttribute(args) => self.read_attribute(args),
-            PluginRequest::WriteAttribute(args) => self.write_attribute(args),
-            PluginRequest::RunAction(args) => self.run_action(args),
+            Request::Signal(signal) => self.signal(signal),
+            Request::DescribeDevice(_) => self.describe_device(),
+            Request::ReadAttribute(args) => self.read_attribute(args),
+            Request::WriteAttribute(args) => self.write_attribute(args),
+            Request::RunAction(args) => self.run_action(args),
         }
     }
 
@@ -327,12 +327,12 @@ impl Server {
         for value in reader {
             // parse the request
             let value = value.expect("Failed to read request");
-            let request = from_value::<PluginRequest>(&value);
+            let request = from_value::<Request>(&value);
 
             // process the request into a response
             let response = match request {
                 Ok(request) => self.process_request(&request),
-                Err(error) => PluginResponse::Error(resp::Error {
+                Err(error) => Response::Error(resp::Error {
                     message: String::from(format!("{}", error)),
                     path: None,
                 }),
