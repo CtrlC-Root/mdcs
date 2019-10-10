@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 mdcs = { path = "../mdcs" }
 mdcs_node = { path = "../mdcs_node" }
+serde = { version = "1.0", features = ["derive"] }
 # avro-rs = "0.6"
 avro-rs = { git = "https://github.com/CtrlC-Root/avro-rs", branch = "dev" }
 

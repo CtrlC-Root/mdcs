@@ -49,3 +49,9 @@ impl From<&str> for DeviceError {
         DeviceError::InternalError(msg.to_string())
     }
 }
+
+impl From<String> for DeviceError {
+    fn from(msg: String) -> DeviceError {
+        DeviceError::InternalError(msg)
+    }
+}
