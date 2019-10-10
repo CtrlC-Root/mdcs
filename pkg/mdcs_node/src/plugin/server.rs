@@ -12,7 +12,6 @@ use super::request::{self as req, Request};
 use super::response::{self as resp, Response};
 
 pub struct Server {
-    name: String,
     device: Device,
     signal_quit: bool,
 }
@@ -32,9 +31,8 @@ fn initial_connect() -> io::Result<TcpStream> {
 }
 
 impl Server {
-    pub fn new(name: String, device: Device) -> Server {
+    pub fn new(device: Device) -> Server {
         Server {
-            name,
             device,
             signal_quit: false,
         }
@@ -117,7 +115,6 @@ impl Server {
         }
 
         Response::Device(resp::Device {
-            name: self.name.clone(),
             attributes,
             actions,
         })

@@ -18,7 +18,6 @@
     "name": "Device",
     "doc": "Device description",
     "fields": [
-      {"name": "name", "type": "string"},
       {
         "name": "attributes",
         "type": {
