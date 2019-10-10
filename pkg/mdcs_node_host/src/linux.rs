@@ -43,8 +43,7 @@ impl Attribute for TempAttribute {
     }
 }
 
-pub fn make_device() -> Device {
-    let mut device = Device::new();
+pub fn platform_attributes(device: &mut Device) {
     let sensors = Sensors::new();
 
     for chip in sensors {
@@ -69,6 +68,4 @@ pub fn make_device() -> Device {
             }
         }
     }
-
-    device
 }

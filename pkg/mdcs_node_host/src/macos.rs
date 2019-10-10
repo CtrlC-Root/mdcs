@@ -53,9 +53,7 @@ impl Attribute for IORegAttribute {
     }
 }
 
-pub fn make_device() -> Device {
-    let mut device = Device::new();
-
+pub fn platform_attributes(device: &mut Device) {
     // serial number
     let attribute = Box::new(IORegAttribute {
         class: "IOPlatformExpertDevice".to_string(),
@@ -71,6 +69,4 @@ pub fn make_device() -> Device {
     });
 
     device.insert("model", Member::Attribute(attribute)).unwrap();
-
-    device
 }
