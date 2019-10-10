@@ -4,7 +4,7 @@ use std::result::Result;
 
 use super::action::Action;
 use super::attribute::Attribute;
-use super::error::{DeviceError, ErrorKind};
+use super::error::DeviceError;
 
 pub enum Member {
     Attribute(Box<dyn Attribute>),
@@ -39,7 +39,7 @@ impl Device {
     pub fn insert(&mut self, path: &str, member: Member) -> Result<(), DeviceError> {
         let path = String::from(path);
         if self.members.contains_key(&path) {
-            Err(DeviceError::new(ErrorKind::PathExists(path)))
+            Err(DeviceError::PathExists(path))
         } else {
             self.members.insert(path, member);
             Ok(())
@@ -52,7 +52,7 @@ impl Device {
             self.members.remove(&path);
             Ok(())
         } else {
-            Err(DeviceError::new(ErrorKind::PathNotFound(path)))
+            Err(DeviceError::PathNotFound(path))
         }
     }
 

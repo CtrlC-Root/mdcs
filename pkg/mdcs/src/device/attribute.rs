@@ -4,7 +4,7 @@ use std::fmt;
 use avro_rs::schema::Schema;
 use avro_rs::types::Value;
 
-use super::error::{DeviceError, ErrorKind};
+use super::error::DeviceError;
 
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub enum AttributeFlags {
@@ -38,11 +38,11 @@ pub trait Attribute {
     }
 
     fn read(&self) -> Result<Value, DeviceError> {
-        Err(DeviceError::new(ErrorKind::Generic))
+        Err(DeviceError::NotImplemented)
     }
 
     fn write(&self, _value: Value) -> Result<(), DeviceError> {
-        Err(DeviceError::new(ErrorKind::Generic))
+        Err(DeviceError::NotImplemented)
     }
 }
 

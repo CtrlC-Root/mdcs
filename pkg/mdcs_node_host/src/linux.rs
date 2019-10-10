@@ -4,7 +4,7 @@ use avro_rs::schema::Schema;
 use avro_rs::types::Value;
 use sensors::{FeatureType, Sensors, SubfeatureType};
 
-use mdcs::device::{Attribute, Device, DeviceError, ErrorKind, Member};
+use mdcs::device::{Attribute, Device, DeviceError, Member};
 
 struct TempAttribute {
     chip_address: i32,
@@ -25,20 +25,20 @@ impl Attribute for TempAttribute {
         let chip = sensors
             .into_iter()
             .find(|c| c.address() == self.chip_address)
-            .ok_or(DeviceError::new(ErrorKind::OutOfSync))?;
+            .ok_or("failed to find sensor chip")?;
 
         let feature = chip
             .into_iter()
             .find(|f| f.number() == self.feature_number)
-            .ok_or(DeviceError::new(ErrorKind::OutOfSync))?;
+            .ok_or("failed to find chip feature")?;
 
         let subfeature = feature
             .get_subfeature(SubfeatureType::SENSORS_SUBFEATURE_TEMP_INPUT)
-            .ok_or(DeviceError::new(ErrorKind::OutOfSync))?;
+            .ok_or("failed to retrieve temperature subfeature")?;
 
-        match subfeature.get_value() {
+        match subfeature.get_value()? {
             Ok(value) => Ok(Value::Double(value)),
-            Err(error) => Err(DeviceError::from(Box::new(error))),
+            Err(error) => Err(format!("Sensor error: {}", error)),
         }
     }
 }

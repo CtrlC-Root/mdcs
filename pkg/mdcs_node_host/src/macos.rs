@@ -8,7 +8,6 @@ use mdcs::device::{
     Attribute,
     Device,
     DeviceError,
-    ErrorKind,
     Member
 };
 
@@ -30,23 +29,22 @@ impl Attribute for IORegAttribute {
     fn read(&self) -> Result<Value, DeviceError> {
         let output = Command::new("/usr/sbin/ioreg")
             .args(&["-r", "-c", &self.class, "-k", &self.property, "-d", "1"])
-            .output()
-            .map_err(|e| DeviceError::from(Box::new(e)))?;
+            .output()?;
 
         let stdout = String::from_utf8(output.stdout)
-            .map_err(|e| DeviceError::from(Box::new(e)))?;
+            .map_err(|_e| "ioreg output not UTF-8 compatible")?;
 
         let line = stdout
             .lines()
             .filter(|line| line.contains(&self.property))
             .nth(0)
-            .ok_or(DeviceError::new(ErrorKind::Generic))?;
+            .ok_or("ioreg output did not contain property name")?;
 
         let wrap_chars: &[_] = &['"', '<', '>'];
         let value = line
             .split(" = ")
             .nth(1)
-            .ok_or(DeviceError::new(ErrorKind::Generic))?
+            .ok_or("ioreg output property line not in expected format")?
             .trim_matches(wrap_chars);
 
         Ok(Value::String(value.to_string()))
