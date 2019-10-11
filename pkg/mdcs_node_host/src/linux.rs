@@ -36,9 +36,12 @@ impl Attribute for TempAttribute {
             .get_subfeature(SubfeatureType::SENSORS_SUBFEATURE_TEMP_INPUT)
             .ok_or("failed to retrieve temperature subfeature")?;
 
-        match subfeature.get_value()? {
+        match subfeature.get_value() {
             Ok(value) => Ok(Value::Double(value)),
-            Err(error) => Err(format!("Sensor error: {}", error)),
+            Err(error) => Err(DeviceError::InternalError(format!(
+                "Sensor error: {}",
+                error
+            ))),
         }
     }
 }
