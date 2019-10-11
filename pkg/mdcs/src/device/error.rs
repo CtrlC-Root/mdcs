@@ -21,8 +21,12 @@ impl fmt::Display for DeviceError {
             DeviceError::InternalError(msg) => write!(fmt, "Internal error: {}", msg),
             DeviceError::NotImplemented => write!(fmt, "Method not implemented"),
             DeviceError::ActionRunInvalid(path) => write!(fmt, "Action cannot be run: {}", path),
-            DeviceError::AttributeReadInvalid(path) => write!(fmt, "Attribute cannot be read: {}", path),
-            DeviceError::AttributeWriteInvalid(path) => write!(fmt, "Attribute cannot be written: {}", path),
+            DeviceError::AttributeReadInvalid(path) => {
+                write!(fmt, "Attribute cannot be read: {}", path)
+            }
+            DeviceError::AttributeWriteInvalid(path) => {
+                write!(fmt, "Attribute cannot be written: {}", path)
+            }
             DeviceError::PathExists(path) => write!(fmt, "Device path already exists: {}", path),
             DeviceError::PathNotFound(path) => write!(fmt, "Device path not found: {}", path),
         }
@@ -33,7 +37,7 @@ impl Error for DeviceError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             DeviceError::Io(ref err) => Some(err),
-            _ => None
+            _ => None,
         }
     }
 }

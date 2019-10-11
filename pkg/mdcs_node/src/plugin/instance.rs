@@ -1,8 +1,8 @@
-use std::io::{self, BufRead, BufReader, Result, ErrorKind};
+use std::io::{self, BufRead, BufReader, ErrorKind, Result};
 use std::net::TcpStream;
 use std::process::{Child, Command, Stdio};
-use std::sync::{Arc};
-use std::sync::mpsc::{channel, Sender, Receiver, TryRecvError};
+use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
+use std::sync::Arc;
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
@@ -23,21 +23,23 @@ fn initial_connect(child: &mut Child) -> Result<TcpStream> {
 
     let length = reader.read_line(&mut listen_line)?;
     if length == 0 {
-        return Err(
-            io::Error::new(ErrorKind::BrokenPipe, "read zero length string from child stdout")
-        );
+        return Err(io::Error::new(
+            ErrorKind::BrokenPipe,
+            "read zero length string from child stdout",
+        ));
     }
 
     if !listen_line.starts_with("LISTENING ") {
-        return Err(
-            io::Error::new(ErrorKind::InvalidData, "expected LISTENING line from child stdout")
-        );
+        return Err(io::Error::new(
+            ErrorKind::InvalidData,
+            "expected LISTENING line from child stdout",
+        ));
     }
 
-    let address = listen_line
-        .split(' ')
-        .nth(1)
-        .ok_or(io::Error::new(ErrorKind::InvalidData, "received invalid LISTENING line"))?;
+    let address = listen_line.split(' ').nth(1).ok_or(io::Error::new(
+        ErrorKind::InvalidData,
+        "received invalid LISTENING line",
+    ))?;
 
     TcpStream::connect(address)
 }
@@ -53,7 +55,7 @@ pub struct Instance {
 #[derive(Debug)]
 struct InstanceMessage {
     request: Request,
-    response: Option<Response>
+    response: Option<Response>,
 }
 
 #[derive(Debug)]
@@ -70,10 +72,7 @@ impl Instance {
 
         let stream = initial_connect(&mut child)?;
         let (sender, receiver) = channel();
-        let mut context = InstanceContext {
-            stream,
-            receiver
-        };
+        let mut context = InstanceContext { stream, receiver };
 
         let handle = thread::spawn(move || {
             context.run();
@@ -90,10 +89,12 @@ impl Instance {
     pub fn process_request(&mut self, request: Request) -> Response {
         let message = Arc::new(InstanceMessage {
             request,
-            response: None
+            response: None,
         });
 
-        self.sender.send(message.clone()).expect("Failed to send message");
+        self.sender
+            .send(message.clone())
+            .expect("Failed to send message");
 
         // TODO: wait for command to finish or time out
         thread::sleep(Duration::from_millis(1000 * 5));
@@ -127,7 +128,7 @@ impl InstanceContext {
 
                     // try again
                     continue;
-                },
+                }
                 Err(TryRecvError::Disconnected) => {
                     // time to quit
                     break;
@@ -135,11 +136,13 @@ impl InstanceContext {
             };
 
             // XXX: not sure if this is the best way
-            let message = Arc::get_mut(&mut message)
-                .expect("Failed to get mutable message reference");
+            let message =
+                Arc::get_mut(&mut message).expect("Failed to get mutable message reference");
 
             // send the request
-            writer.append_ser(&message.request).expect("Failed to serialize request");
+            writer
+                .append_ser(&message.request)
+                .expect("Failed to serialize request");
             writer.flush().expect("Failed to flush writer");
 
             // receive the response
@@ -148,9 +151,8 @@ impl InstanceContext {
                 .expect("Failed to read response")
                 .expect("Failed to unserialize response");
 
-            message.response = Some(
-                from_value::<Response>(&value).expect("Failed to unserialize response")
-            );
+            message.response =
+                Some(from_value::<Response>(&value).expect("Failed to unserialize response"));
 
             // TODO: notify whoever is waiting the command is complete
         }
